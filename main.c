@@ -12,7 +12,7 @@ int main()
 	printf("at(): %s\n", s->at(2));
 	printf("empty(): %s\n",s->empty()? "true" : "false");
 	printf("compare %d\n", s->compare("tess"));
-	printf("substr: %s\n", s->substr((pos){.start=1}));
+	printf("substr: %s\n", s->substr((pos){.start=1, .skip='t'}));
 
 	printf("\ncopy constructor test:\n\n");
 	t_string *s2 = {String(s)};

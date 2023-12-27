@@ -32,9 +32,9 @@ t_string *string_arr[64];
 #define EMPTY(i) bool empty_##i() { return string_arr[i]->size == 0; }
 #define CLEAR(i) void clear_##i() { for (size_t s = 0; s < string_arr[i]->size; s++) {string_arr[i]->data[s] = 0;} string_arr[i]->size = 0; }
 #define COMPARE(i) int compare_##i(char *other) { int j = 0; while (other[j] && string_arr[i]->data[j]) { if (other[j] != string_arr[i]->data[j]) return other[j] - string_arr[i]->data[j]; j++;} return 0; }
-#define SUBSTR(i) char *substr_##i(pos range) { int size = 0; if (range.start > string_arr[i]->size) return NULL; else if (range.end > string_arr[i]->size) range.end = size; if (range.start > range.end) { size = string_arr[i]->size - range.start; range.end = string_arr[i]->size; } else if (range.start < range.end) size = range.end - range.start; char *ret = malloc(sizeof(char) * size + 1); int k = 0; while (range.start < range.end) ret[k++] = string_arr[i]->data[range.start++]; ret[k] = 0; return ret; }
+#define SUBSTR(i) char *substr_##i(pos range) { int size = 0; if (range.start > string_arr[i]->size) return NULL; else if (range.end > string_arr[i]->size) range.end = size; if (range.start > range.end) { size = string_arr[i]->size - range.start; range.end = string_arr[i]->size; } else if (range.start < range.end) size = range.end - range.start; char *ret = malloc(sizeof(char) * size + 1); int k = 0; for (size_t n = range.start; n < range.end; n++) { if (range.skip != 0 && string_arr[i]->data[n] == range.skip) continue; ret[k++] = string_arr[i]->data[n]; } ret[k] = 0; return ret; }
 #define CASE(i) case i: s->begin = &begin_##i; s->end = &end_##i; s->at = &at_##i; s->empty = &empty_##i; s->clear = &clear_##i; s->compare = &compare_##i; s->substr = &substr_##i; return
-// #define HOOK_BEGIN(i) &(t_string){.begin=&begin_##i}
+
 
 BEGIN(0);BEGIN(10);BEGIN(20);BEGIN(30);BEGIN(40);BEGIN(50);BEGIN(60);BEGIN(1);BEGIN(11);BEGIN(21);BEGIN(31);BEGIN(41);BEGIN(51);BEGIN(61);
 BEGIN(2);BEGIN(12);BEGIN(22);BEGIN(32);BEGIN(42);BEGIN(52);BEGIN(62);BEGIN(3);BEGIN(13);BEGIN(23);BEGIN(33);BEGIN(43);BEGIN(53);BEGIN(63);

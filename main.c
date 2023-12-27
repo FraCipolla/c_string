@@ -12,6 +12,7 @@ int main()
 	printf("at(): %s\n", s->at(2));
 	printf("empty(): %s\n",s->empty()? "true" : "false");
 	printf("compare %d\n", s->compare("tess"));
+	printf("substr: %s\n", s->substr((pos){.start=1}));
 	s->clear();
 	printf("data: %s\n", s->data);
 	printf("current: %s\n", s->current);

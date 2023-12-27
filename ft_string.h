@@ -4,7 +4,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-typedef char * it;
+typedef struct s_pos {
+	size_t start;
+	size_t end;
+	int skip;
+}	pos;
+
 typedef struct s_string {
 	char *current;
 	char data[128];
@@ -16,9 +21,9 @@ typedef struct s_string {
 	bool (*empty)();
 	void (*clear)();
 	int (*compare)(char *other);
+	char *(*substr)(pos range);
 }	t_string;
 
-#define STRING(x) { .str=#x, .begin=&#x[0] }
 t_string *string_arr[64];
 
 #define BEGIN(i) char *begin_##i() { return &string_arr[i]->data[0]; }
@@ -27,7 +32,8 @@ t_string *string_arr[64];
 #define EMPTY(i) bool empty_##i() { return string_arr[i]->size == 0; }
 #define CLEAR(i) void clear_##i() { for (size_t s = 0; s < string_arr[i]->size; s++) {string_arr[i]->data[s] = 0;} string_arr[i]->size = 0; }
 #define COMPARE(i) int compare_##i(char *other) { int j = 0; while (other[j] && string_arr[i]->data[j]) { if (other[j] != string_arr[i]->data[j]) return other[j] - string_arr[i]->data[j]; j++;} return 0; }
-#define CASE(i) case i: s->begin = &begin_##i; s->end = &end_##i; s->at = &at_##i; s->empty = &empty_##i; s->clear = &clear_##i; s->compare = &compare_##i; return
+#define SUBSTR(i) char *substr_##i(pos range) { int size = 0; if (range.start > string_arr[i]->size) return NULL; else if (range.end > string_arr[i]->size) range.end = size; if (range.start > range.end) { size = string_arr[i]->size - range.start; range.end = string_arr[i]->size; } else if (range.start < range.end) size = range.end - range.start; char *ret = malloc(sizeof(char) * size + 1); int k = 0; while (range.start < range.end) ret[k++] = string_arr[i]->data[range.start++]; ret[k] = 0; return ret; }
+#define CASE(i) case i: s->begin = &begin_##i; s->end = &end_##i; s->at = &at_##i; s->empty = &empty_##i; s->clear = &clear_##i; s->compare = &compare_##i; s->substr = &substr_##i; return
 // #define HOOK_BEGIN(i) &(t_string){.begin=&begin_##i}
 
 BEGIN(0);BEGIN(10);BEGIN(20);BEGIN(30);BEGIN(40);BEGIN(50);BEGIN(60);BEGIN(1);BEGIN(11);BEGIN(21);BEGIN(31);BEGIN(41);BEGIN(51);BEGIN(61);
@@ -60,6 +66,11 @@ COMPARE(2);COMPARE(12);COMPARE(22);COMPARE(32);COMPARE(42);COMPARE(52);COMPARE(6
 COMPARE(4);COMPARE(14);COMPARE(24);COMPARE(34);COMPARE(44);COMPARE(54);COMPARE(64);COMPARE(5);COMPARE(15);COMPARE(25);COMPARE(35);COMPARE(45);COMPARE(55);
 COMPARE(6);COMPARE(16);COMPARE(26);COMPARE(36);COMPARE(46);COMPARE(56);COMPARE(7);COMPARE(17);COMPARE(27);COMPARE(37);COMPARE(47);COMPARE(57);
 COMPARE(8);COMPARE(18);COMPARE(28);COMPARE(38);COMPARE(48);COMPARE(58);COMPARE(9);COMPARE(19);COMPARE(29);COMPARE(39);COMPARE(49);COMPARE(59);
+SUBSTR(0);SUBSTR(10);SUBSTR(20);SUBSTR(30);SUBSTR(40);SUBSTR(50);SUBSTR(60);SUBSTR(1);SUBSTR(11);SUBSTR(21);SUBSTR(31);SUBSTR(41);SUBSTR(51);SUBSTR(61);
+SUBSTR(2);SUBSTR(12);SUBSTR(22);SUBSTR(32);SUBSTR(42);SUBSTR(52);SUBSTR(62);SUBSTR(3);SUBSTR(13);SUBSTR(23);SUBSTR(33);SUBSTR(43);SUBSTR(53);SUBSTR(63);
+SUBSTR(4);SUBSTR(14);SUBSTR(24);SUBSTR(34);SUBSTR(44);SUBSTR(54);SUBSTR(64);SUBSTR(5);SUBSTR(15);SUBSTR(25);SUBSTR(35);SUBSTR(45);SUBSTR(55);
+SUBSTR(6);SUBSTR(16);SUBSTR(26);SUBSTR(36);SUBSTR(46);SUBSTR(56);SUBSTR(7);SUBSTR(17);SUBSTR(27);SUBSTR(37);SUBSTR(47);SUBSTR(57);
+SUBSTR(8);SUBSTR(18);SUBSTR(28);SUBSTR(38);SUBSTR(48);SUBSTR(58);SUBSTR(9);SUBSTR(19);SUBSTR(29);SUBSTR(39);SUBSTR(49);SUBSTR(59);
 
 void switch_begin(int i, t_string *s)
 {

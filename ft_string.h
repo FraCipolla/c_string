@@ -1,21 +1,25 @@
 #pragma once
 
 #include <stdarg.h>
+#include <stdlib.h>
 
 typedef char * it;
 typedef struct s_string {
-	char *str;
-	char *data;
-	it start;
+	char current[128];
+	char data[128];
+	size_t size;
+	size_t capacity;
 	char *(*begin)();
+	char *(*end)();
 }	t_string;
 
 #define STRING(x) { .str=#x, .begin=&#x[0] }
 t_string *string_arr[64];
 
 #define index 0
-#define BEGIN(i) char *begin_##i() { return &string_arr[i]->str[0]; }
-#define CASE(i) case i: s->begin = &begin_##i; return
+#define BEGIN(i) char *begin_##i() { return &string_arr[i]->data[0]; }
+#define END(i) char *end_##i() { return &string_arr[i]->data[string_arr[i]->size]; }
+#define CASE(i) case i: s->begin = &begin_##i; s->end = &end_##i; return
 // #define HOOK_BEGIN(i) &(t_string){.begin=&begin_##i}
 
 BEGIN(0);BEGIN(10);BEGIN(20);BEGIN(30);BEGIN(40);BEGIN(50);BEGIN(60);
@@ -28,6 +32,17 @@ BEGIN(6);BEGIN(16);BEGIN(26);BEGIN(36);BEGIN(46);BEGIN(56);
 BEGIN(7);BEGIN(17);BEGIN(27);BEGIN(37);BEGIN(47);BEGIN(57);
 BEGIN(8);BEGIN(18);BEGIN(28);BEGIN(38);BEGIN(48);BEGIN(58);
 BEGIN(9);BEGIN(19);BEGIN(29);BEGIN(39);BEGIN(49);BEGIN(59);
+
+END(0);END(10);END(20);END(30);END(40);END(50);END(60);
+END(1);END(11);END(21);END(31);END(41);END(51);END(61);
+END(2);END(12);END(22);END(32);END(42);END(52);END(62);
+END(3);END(13);END(23);END(33);END(43);END(53);END(63);
+END(4);END(14);END(24);END(34);END(44);END(54);END(64);
+END(5);END(15);END(25);END(35);END(45);END(55);
+END(6);END(16);END(26);END(36);END(46);END(56);
+END(7);END(17);END(27);END(37);END(47);END(57);
+END(8);END(18);END(28);END(38);END(48);END(58);
+END(9);END(19);END(29);END(39);END(49);END(59);
 
 void switch_begin(int i, t_string *s)
 {
@@ -104,8 +119,22 @@ void switch_begin(int i, t_string *s)
 t_string *String(char *str)
 {
 	static int i = 0;
-	t_string *new = &(t_string){.str = str, .data = str};
-	string_arr[i] = new;
+	size_t size = 0;
+	while (str[size])
+		size++;
+	string_arr[i] = malloc (sizeof(t_string));
+	for (size_t j = 0; j < size; j++) {
+		string_arr[i]->current[j] = str[j];
+		string_arr[i]->data[j] = str[j];
+	}
+	string_arr[i]->current[size] = 0;
+	string_arr[i]->data[size] = 0;
+	string_arr[i]->size = size;
 	switch_begin(i, string_arr[i]);
-	return (string_arr[i++]);
+	t_string *ret = string_arr[i];
+	if (i < 64)
+		++i;
+	else
+		i = 0;
+	return (ret);
 }

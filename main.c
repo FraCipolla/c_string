@@ -3,10 +3,16 @@
 
 int main()
 {
-	t_string *s2 = String("seconda prova");
-	printf("%s\n", s2->begin());
-	printf("%s\n", s2->data);
-	printf("%s\n", s2->current);
-	printf("%s\n", s2->end() - 1);
-	printf("%s\n", s2->at(4));
+	t_string *s = String("test");
+	printf("begin: %s\n", s->begin());
+	printf("data: %s\n", s->data);
+	printf("current: %s\n", s->current);
+	printf("capacity: %ld\n", s->capacity);
+	printf("end(): %s\n", s->end() - 1);
+	printf("at(): %s\n", s->at(2));
+	printf("empty(): %s\n",s->empty()? "true" : "false");
+	printf("compare %d\n", s->compare("tess"));
+	s->clear();
+	printf("data: %s\n", s->data);
+	printf("current: %s\n", s->current);
 }

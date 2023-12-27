@@ -2,26 +2,32 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef char * it;
 typedef struct s_string {
-	char current[128];
+	char *current;
 	char data[128];
 	size_t size;
 	size_t capacity;
 	char *(*begin)();
 	char *(*end)();
 	char *(*at)(int j);
+	bool (*empty)();
+	void (*clear)();
+	int (*compare)(char *other);
 }	t_string;
 
 #define STRING(x) { .str=#x, .begin=&#x[0] }
 t_string *string_arr[64];
 
-#define index 0
 #define BEGIN(i) char *begin_##i() { return &string_arr[i]->data[0]; }
 #define END(i) char *end_##i() { return &string_arr[i]->data[string_arr[i]->size]; }
 #define AT(i) char *at_##i(int j) { return &string_arr[i]->data[j]; }
-#define CASE(i) case i: s->begin = &begin_##i; s->end = &end_##i; s->at = &at_##i; return
+#define EMPTY(i) bool empty_##i() { return string_arr[i]->size == 0; }
+#define CLEAR(i) void clear_##i() { for (size_t s = 0; s < string_arr[i]->size; s++) {string_arr[i]->data[s] = 0;} string_arr[i]->size = 0; }
+#define COMPARE(i) int compare_##i(char *other) { int j = 0; while (other[j] && string_arr[i]->data[j]) { if (other[j] != string_arr[i]->data[j]) return other[j] - string_arr[i]->data[j]; j++;} return 0; }
+#define CASE(i) case i: s->begin = &begin_##i; s->end = &end_##i; s->at = &at_##i; s->empty = &empty_##i; s->clear = &clear_##i; s->compare = &compare_##i; return
 // #define HOOK_BEGIN(i) &(t_string){.begin=&begin_##i}
 
 BEGIN(0);BEGIN(10);BEGIN(20);BEGIN(30);BEGIN(40);BEGIN(50);BEGIN(60);BEGIN(1);BEGIN(11);BEGIN(21);BEGIN(31);BEGIN(41);BEGIN(51);BEGIN(61);
@@ -39,6 +45,21 @@ AT(2);AT(12);AT(22);AT(32);AT(42);AT(52);AT(62);AT(3);AT(13);AT(23);AT(33);AT(43
 AT(4);AT(14);AT(24);AT(34);AT(44);AT(54);AT(64);AT(5);AT(15);AT(25);AT(35);AT(45);AT(55);
 AT(6);AT(16);AT(26);AT(36);AT(46);AT(56);AT(7);AT(17);AT(27);AT(37);AT(47);AT(57);
 AT(8);AT(18);AT(28);AT(38);AT(48);AT(58);AT(9);AT(19);AT(29);AT(39);AT(49);AT(59);
+EMPTY(0);EMPTY(10);EMPTY(20);EMPTY(30);EMPTY(40);EMPTY(50);EMPTY(60);EMPTY(1);EMPTY(11);EMPTY(21);EMPTY(31);EMPTY(41);EMPTY(51);EMPTY(61);
+EMPTY(2);EMPTY(12);EMPTY(22);EMPTY(32);EMPTY(42);EMPTY(52);EMPTY(62);EMPTY(3);EMPTY(13);EMPTY(23);EMPTY(33);EMPTY(43);EMPTY(53);EMPTY(63);
+EMPTY(4);EMPTY(14);EMPTY(24);EMPTY(34);EMPTY(44);EMPTY(54);EMPTY(64);EMPTY(5);EMPTY(15);EMPTY(25);EMPTY(35);EMPTY(45);EMPTY(55);
+EMPTY(6);EMPTY(16);EMPTY(26);EMPTY(36);EMPTY(46);EMPTY(56);EMPTY(7);EMPTY(17);EMPTY(27);EMPTY(37);EMPTY(47);EMPTY(57);
+EMPTY(8);EMPTY(18);EMPTY(28);EMPTY(38);EMPTY(48);EMPTY(58);EMPTY(9);EMPTY(19);EMPTY(29);EMPTY(39);EMPTY(49);EMPTY(59);
+CLEAR(0);CLEAR(10);CLEAR(20);CLEAR(30);CLEAR(40);CLEAR(50);CLEAR(60);CLEAR(1);CLEAR(11);CLEAR(21);CLEAR(31);CLEAR(41);CLEAR(51);CLEAR(61);
+CLEAR(2);CLEAR(12);CLEAR(22);CLEAR(32);CLEAR(42);CLEAR(52);CLEAR(62);CLEAR(3);CLEAR(13);CLEAR(23);CLEAR(33);CLEAR(43);CLEAR(53);CLEAR(63);
+CLEAR(4);CLEAR(14);CLEAR(24);CLEAR(34);CLEAR(44);CLEAR(54);CLEAR(64);CLEAR(5);CLEAR(15);CLEAR(25);CLEAR(35);CLEAR(45);CLEAR(55);
+CLEAR(6);CLEAR(16);CLEAR(26);CLEAR(36);CLEAR(46);CLEAR(56);CLEAR(7);CLEAR(17);CLEAR(27);CLEAR(37);CLEAR(47);CLEAR(57);
+CLEAR(8);CLEAR(18);CLEAR(28);CLEAR(38);CLEAR(48);CLEAR(58);CLEAR(9);CLEAR(19);CLEAR(29);CLEAR(39);CLEAR(49);CLEAR(59);
+COMPARE(0);COMPARE(10);COMPARE(20);COMPARE(30);COMPARE(40);COMPARE(50);COMPARE(60);COMPARE(1);COMPARE(11);COMPARE(21);COMPARE(31);COMPARE(41);COMPARE(51);COMPARE(61);
+COMPARE(2);COMPARE(12);COMPARE(22);COMPARE(32);COMPARE(42);COMPARE(52);COMPARE(62);COMPARE(3);COMPARE(13);COMPARE(23);COMPARE(33);COMPARE(43);COMPARE(53);COMPARE(63);
+COMPARE(4);COMPARE(14);COMPARE(24);COMPARE(34);COMPARE(44);COMPARE(54);COMPARE(64);COMPARE(5);COMPARE(15);COMPARE(25);COMPARE(35);COMPARE(45);COMPARE(55);
+COMPARE(6);COMPARE(16);COMPARE(26);COMPARE(36);COMPARE(46);COMPARE(56);COMPARE(7);COMPARE(17);COMPARE(27);COMPARE(37);COMPARE(47);COMPARE(57);
+COMPARE(8);COMPARE(18);COMPARE(28);COMPARE(38);COMPARE(48);COMPARE(58);COMPARE(9);COMPARE(19);COMPARE(29);COMPARE(39);COMPARE(49);COMPARE(59);
 
 void switch_begin(int i, t_string *s)
 {
@@ -120,12 +141,12 @@ t_string *String(char *str)
 		size++;
 	string_arr[i] = malloc (sizeof(t_string));
 	for (size_t j = 0; j < size; j++) {
-		string_arr[i]->current[j] = str[j];
 		string_arr[i]->data[j] = str[j];
 	}
-	string_arr[i]->current[size] = 0;
 	string_arr[i]->data[size] = 0;
+	string_arr[i]->current = &string_arr[i]->data[0];
 	string_arr[i]->size = size;
+	string_arr[i]->capacity = sizeof(string_arr[i]->data);
 	switch_begin(i, string_arr[i]);
 	t_string *ret = string_arr[i];
 	if (i < 64)

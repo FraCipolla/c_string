@@ -144,13 +144,14 @@ void switch_begin(int i, t_string *s)
 	}
 }
 
-t_string *String(char *str)
+static int i = 0;
+
+t_string *String_char(char *str)
 {
-	static int i = 0;
 	size_t size = 0;
 	while (str[size])
 		size++;
-	string_arr[i] = malloc (sizeof(t_string));
+	string_arr[i] = malloc(sizeof(t_string));
 	for (size_t j = 0; j < size; j++) {
 		string_arr[i]->data[j] = str[j];
 	}
@@ -166,3 +167,24 @@ t_string *String(char *str)
 		i = 0;
 	return (ret);
 }
+
+t_string *String_t_string(t_string *str)
+{
+	string_arr[i] = malloc(sizeof(t_string));
+	for (size_t j = 0; j < str->size; j++) {
+		string_arr[i]->data[j] = str->data[j];
+	}
+	string_arr[i]->data[str->size] = 0;
+	string_arr[i]->current = &str->data[0];
+	string_arr[i]->size = str->size;
+	string_arr[i]->capacity = str->capacity;
+	switch_begin(i, string_arr[i]);
+	t_string *ret = string_arr[i];
+	if (i < 64)
+		++i;
+	else
+		i = 0;
+	return (ret);
+}
+
+#define String(obj) _Generic( (obj), char * : String_char, t_string * : String_t_string) ((obj))

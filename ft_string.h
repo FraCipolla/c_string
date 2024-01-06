@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define SMALL_CHUNK 128
+#define MEDIUM_CHUNK 256
+#define BIG_CHUNK 512
+
 typedef struct s_pos {
 	size_t start;
 	size_t end;
@@ -11,8 +15,8 @@ typedef struct s_pos {
 }	pos;
 
 typedef struct s_string {
-	char *current;
 	char *data;
+	char *current;
 	size_t size;
 	size_t capacity;
 	char *(*begin)();
@@ -70,14 +74,19 @@ t_string *String_char(char *str)
 	size_t size = 0;
 	while (str[size])
 		size++;
-	string_arr[i] = malloc(sizeof(t_string));
+	if (!(string_arr[i] = malloc(sizeof(t_string)))) {
+		perror("malloc");
+		exit (0);
+	}
+	size_t data_size = size <= SMALL_CHUNK ? SMALL_CHUNK : size <= MEDIUM_CHUNK ? MEDIUM_CHUNK : BIG_CHUNK;
+	string_arr[i]->data = malloc(sizeof(char) * data_size);
 	for (size_t j = 0; j < size; j++) {
 		string_arr[i]->data[j] = str[j];
 	}
 	string_arr[i]->data[size] = 0;
 	string_arr[i]->current = &string_arr[i]->data[0];
 	string_arr[i]->size = size;
-	string_arr[i]->capacity = sizeof(string_arr[i]->data);
+	string_arr[i]->capacity = data_size;
 	switch_begin(i, string_arr[i]);
 	t_string *ret = string_arr[i];
 	if (i < 7)
@@ -90,6 +99,7 @@ t_string *String_char(char *str)
 t_string *String_t_string(t_string *str)
 {
 	string_arr[i] = malloc(sizeof(t_string));
+	string_arr[i]->data = malloc(sizeof(char) * str->capacity);
 	for (size_t j = 0; j < str->size; j++) {
 		string_arr[i]->data[j] = str->data[j];
 	}

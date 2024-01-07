@@ -7,11 +7,11 @@ Obviously, this came with many downside, first of all the need to predefine the 
 It will probably have some benefit, the same you can find in C++ strings. For example, you can know the size of a string at O(1), using the internal size, you can call methods without passing the string to it, it will also take 'self' as parameter internally. You can do stuffs like throwing an error if you try to access out of bound memory.
 
 ## **index:**
-  ### Introduction
-  - Start
-  - Declaring functions
-  - Build up
-  - Testing
+  - [Introduction](#introduction)
+  - [Start](#start)
+  - [Declaring functions](#declaring-functions)
+  - [Build up](#build-up)
+  - [Testing](#testing)
 
 ## Introduction
 In C **macros** are simply text substitution that happens during the preprocessor. That's basically it, plain and simple. That also means that you can define **keyword**, because preprocessor doesn't know anything about keywords, according to [GNU manual](https://gcc.gnu.org/onlinedocs/cpp/Macros.html).

@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #define SMALL_CHUNK 128
 #define MEDIUM_CHUNK 256

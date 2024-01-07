@@ -23,8 +23,9 @@ The idea behind the project is to:
 Moving from this, we can start built our header in a way that C preprocessor will handle all the declarations.
 
 ## Start
-First thing first, we need to define our structure:
+First thing first, we need to define our structure. Let's create c_string.h and define our structure:
 ```
+#pragma once
 typedef struct s_string {
   char *data;
   size_t size;
@@ -129,6 +130,27 @@ switch (i)
 	...
 	}
 ```
+In the end, let's define a macro to get a more C++ style to declare strings:
+```
+#define String(str)  String_char(str)
+```
+now invoking **String(<str>)** will be expanded to the function call String_char(char *) passing str to it
 
 ## Testing
+Now we can start putting something together. Let's create our main to test our string:
+```
+#include "c_string.h"
+#include <stdio.h>
 
+int main()
+{
+	t_string *s = {String("test")}; // initialize string with "test"
+	printf("s->data: %s size: %ld\n", s->data, s->size); // print s->data: "test" size: 4
+	s->clear(); // empty the string
+	printf("s->data: %s size: %ld\n", s->data, s->size); // print s->data: size: 0
+}
+```
+we can also typedef t_string * to get even close to C++
+```
+typedef t_string* string;
+```

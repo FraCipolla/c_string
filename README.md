@@ -7,9 +7,11 @@ Obviously, this came with many downside, first of all the need to predefine the 
 It will probably have some benefit, the same you can find in C++ strings. For example, you can know the size of a string at O(1), using the internal size, you can call methods without passing the string to it, it will also take 'self' as parameter internally. You can do stuffs like throwing an error if you try to access out of bound memory.
 
 ## **index:**
-  - Introduction
-  - Start
-  - Declaring functions
+  ### Introduction
+  ### Start
+  ### Declaring functions
+  ### Build up
+  
 
 ### Introduction
 In C **macros** are simply text substitution that happens during the preprocessor. That's basically it, plain and simple. That also means that you can define **keyword**, because preprocessor doesn't know anything about keywords, according to [GNU manual](https://gcc.gnu.org/onlinedocs/cpp/Macros.html).
@@ -48,4 +50,49 @@ Now we have to define che COUNTER(i) macro. COUNTER will take the __COUNTER__ va
 ```
 #define CLEAR(i) void clear_##i() { for (size_t s = 0; s < string_arr[i]->size; s++) {string_arr[i]->data[s] = 0;} string_arr[i]->size = 0; }
 ```
-This macro generate a function with an unique name based on the 'i' value. The **##** is needed for concatenation(see https://gcc.gnu.org/onlinedocs/cpp/Concatenation.html)
+This macro generate a function with an unique name based on the 'i' value. The **##** is needed for concatenation(see https://gcc.gnu.org/onlinedocs/cpp/Concatenation.html). So we will create a function like:
+```
+void clear_0()
+{
+  for (size_t s = 0; s < string_arr[i]->size; s++) {
+    string_arr[i]->data[s] = 0;
+  }
+  string_arr[i]->size = 0;
+}
+```
+Now the only thing left is to 'hook' the function generated function to the right string inside the string_array. Unfortunately we can't do this during preprocessor phase, but we can easly do this when constructing the string.
+
+### Build up
+First of all, let's define our costructor. It will be a simple function that return the initialized t_string pointing to the correct index.
+```
+#define SMALL_CHUNK 128
+#define MEDIUM_CHUNK 256
+#define BIG_CHUNK 512
+static int i = 0;
+t_string *String_char(char *str)
+{
+	size_t size = 0;
+	while (str[size])
+		size++;
+	if (!(string_arr[i] = malloc(sizeof(t_string)))) {
+		perror("malloc");
+		exit (0);
+	}
+	size_t data_size = size <= SMALL_CHUNK ? SMALL_CHUNK : size <= MEDIUM_CHUNK ? MEDIUM_CHUNK : BIG_CHUNK;
+	string_arr[i]->data = malloc(sizeof(char) * data_size);
+	for (size_t j = 0; j < size; j++) {
+		string_arr[i]->data[j] = str[j];
+	}
+	string_arr[i]->data[size] = 0;
+	string_arr[i]->current = &string_arr[i]->data[0];
+	string_arr[i]->size = size;
+	string_arr[i]->capacity = data_size;
+	switch_begin(i, string_arr[i]);
+	t_string *ret = string_arr[i];
+	if (i < 7)
+		++i;
+	else
+		i = 0;
+	return (ret);
+}
+```

@@ -7,11 +7,11 @@ Obviously, this came with many downside, first of all the need to predefine the 
 It will probably have some benefit, the same you can find in C++ strings. For example, you can know the size of a string at O(1), using the internal size, you can call methods without passing the string to it, it will also take 'self' as parameter internally. You can do stuffs like throwing an error if you try to access out of bound memory.
 
 ## **index:**
-  ### Introduction
-  ### Start
-  ### Declaring functions
-  ### Build up
-  
+  - Introduction
+  - Start
+  - Declaring functions
+  - Build up
+  - [Testing](Testing)
 
 ### Introduction
 In C **macros** are simply text substitution that happens during the preprocessor. That's basically it, plain and simple. That also means that you can define **keyword**, because preprocessor doesn't know anything about keywords, according to [GNU manual](https://gcc.gnu.org/onlinedocs/cpp/Macros.html).
@@ -41,6 +41,7 @@ I've choosed to use just 8 strings, we don't need them for everything, and we ca
 ### Declaring functions
 In my project I used a nested macro to generate a progressive number using the **__COUNTER__** predefined macro. Has explained by GNU manual:
 > If you want to stringize the result of expansion of a macro argument, you have to use two levels of macros
+
 so we build one level of indirection, we expand __COUNTER__ macro to its value, and pass that value to any method we want to build. The first passage will look like:
 ```
 #define BUILD_STRING() COUNTER(__COUNTER__)
@@ -60,7 +61,11 @@ void clear_0()
   string_arr[i]->size = 0;
 }
 ```
+We can simulate methods because the function already know the right position of the string to work with.
 Now the only thing left is to 'hook' the function generated function to the right string inside the string_array. Unfortunately we can't do this during preprocessor phase, but we can easly do this when constructing the string.
+***Tip:
+you can check all preprocessor expansions compiling with -E flag (using gcc), and choose to redirect the output on a file.
+Note that this method will expand any prepocessor directives, like #define, #include and so on***
 
 ### Build up
 First of all, let's define our costructor. It will be a simple function that return the initialized t_string pointing to the correct index.
@@ -71,6 +76,10 @@ First of all, let's define our costructor. It will be a simple function that ret
 static int i = 0;
 t_string *String_char(char *str)
 {
+	if (string_arr[i]) {
+		free(string_arr[i]->data);
+		free(string_arr[i]);
+	}
 	size_t size = 0;
 	while (str[size])
 		size++;
@@ -87,7 +96,7 @@ t_string *String_char(char *str)
 	string_arr[i]->current = &string_arr[i]->data[0];
 	string_arr[i]->size = size;
 	string_arr[i]->capacity = data_size;
-	switch_begin(i, string_arr[i]);
+	switch_string(i, string_arr[i]); // assign methods
 	t_string *ret = string_arr[i];
 	if (i < 7)
 		++i;
@@ -96,3 +105,28 @@ t_string *String_char(char *str)
 	return (ret);
 }
 ```
+The above is quite self explanatory. The only mention is about the char * allocation. I decided to allocate fixed amount of bytes instead of the actual string length. This is done for performance improvement, avoiding to reallocate data anytime we need to append some chars. The other big note is about the **NULL** terminating char of data. It is obviously not needed, since we already have size to use to iterate the string. This is just merely for an easier C compatibility, it could be avoided adding a method that return a C style string like c_str(). If we reache the last index of string_arr, we go back to index 0.
+We also have to define the function **switch_string**. This function is needed to assign the right methods to the string.
+```
+#define CASE(i) case i: s->clear() = &clear_##i; return
+void switch_string(int i, t_string *s)
+{
+	switch (i)
+	{
+	CASE(0);
+	CASE(1);
+	CASE(2);
+	... until 7
+	}
+}
+```
+I had again to use macro to do this. Since we've learnt how to concatenate value to macro, we can do magic and define a macro to append the right index to the corresponding function. After prepocessor, the code will look like this:
+```
+switch (i)
+	{
+	case 0: s->clear() = &clear_##0; return;
+	case 1: s->clear() = &clear_##1; return;
+	...
+	}
+```
+### Testing

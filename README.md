@@ -12,6 +12,8 @@ It will probably have some benefit, the same you can find in C++ strings. For ex
   - [Declaring functions](#declaring-functions)
   - [Build up](#build-up)
   - [Testing](#testing)
+  - [Polymorphism](#polymorphism)
+  - [End](#end)
 
 ## Introduction
 In C **macros** are simply text substitution that happens during the preprocessor. That's basically it, plain and simple. That also means that you can define **keyword**, because preprocessor doesn't know anything about keywords, according to [GNU manual](https://gcc.gnu.org/onlinedocs/cpp/Macros.html).
@@ -154,3 +156,46 @@ we can also typedef t_string * to get even close to C++
 ```
 typedef t_string* string;
 ```
+
+## Polymorphism
+Now, if we want even try to emulate a copy costructor like C++, we can implement some C preprocessor functionality, using the _Generic directive.
+First let's declar a function that accept a t_string as parameter:
+```
+t_string *String_t_string(t_string *str)
+{
+	if (string_arr[i]) {
+		free(string_arr[i]->data);
+		free(string_arr[i]);
+	}
+	string_arr[i] = malloc(sizeof(t_string));
+	string_arr[i]->data = malloc(sizeof(char) * str->capacity);
+	for (size_t j = 0; j < str->size; j++) {
+		string_arr[i]->data[j] = str->data[j];
+	}
+	string_arr[i]->data[str->size] = 0;
+	string_arr[i]->current = &str->data[0];
+	string_arr[i]->size = str->size;
+	string_arr[i]->capacity = str->capacity;
+	switch_begin(i, string_arr[i]);
+	t_string *ret = string_arr[i];
+	if (i < 7)
+		++i;
+	else
+		i = 0;
+	return (ret);
+}
+```
+after let's implement _Generic, modifyng the '#define String...' macro:
+```
+#define String(obj) _Generic( (obj), char * : String_char, t_string * : String_t_string) ((obj))
+```
+This makes possible to the preprocessor to choose the correct function based on the argument passed. Now we can initialize 1 string passing another string:
+```
+string s2 = {String(s)};
+```
+Cool, right?
+
+## End
+That's all! This approch doesn't seem to hard watching now, but i struggled many days to find the most elegant and functional solution.
+You can now go on and define your own methods and all the implementation needed!
+It was great to learn a bit more about macro and _Generic, and i can't wait go even deeper in learning everything C has to offer!

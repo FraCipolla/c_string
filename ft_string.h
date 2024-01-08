@@ -32,12 +32,14 @@ typedef struct s_string {
 	bool (*equal)(char *);
 	void (*push_back)(char c);
 	void (*append)(char *);
-	char *(*c_str)();
+	const char *(*c_str)();
+	bool (*contain)(char *);
 }	t_string;
 
 t_string *string_arr[8];
 typedef t_string* string;
 
+#define C_STR(i) const char *c_str_##i() { char *ret; ret = string_arr[i]->data; ret[string_arr[i]->size] = 0; return (const char*)ret; }
 #define BEGIN(i) char *begin_##i() { return &string_arr[i]->data[0]; }
 #define END(i) char *end_##i() { return &string_arr[i]->data[string_arr[i]->size]; }
 #define AT(i) char at_##i(size_t j) { if (j > string_arr[i]->size) return '\0'; return string_arr[i]->data[j]; }
@@ -49,8 +51,9 @@ typedef t_string* string;
 #define EQUAL(i) bool equal_##i(char *str) { for (size_t n = 0; n < string_arr[i]->size; n++) { if (string_arr[i]->data[n] != str[n]) return false; } if (str[string_arr[i]->size] == 0) return true; else return false; }
 #define PUSH_BACK(i) void push_back_##i(char c) { if (string_arr[i]->size == string_arr[i]->capacity) { char *new = malloc(sizeof(char) * string_arr[i]->capacity * 2); memcpy(new, string_arr[i]->data, string_arr[i]->size + 1); free(string_arr[i]->data); string_arr[i]->data = new; string_arr[i]->size++; string_arr[i]->capacity *= 2; } else {string_arr[i]->data[string_arr[i]->size] = c; string_arr[i]->size++; } }
 #define APPEND(i) void append_##i(char *str) { size_t len = strlen(str); if (string_arr[i]->capacity - string_arr[i]->size < len) { char *new = malloc(sizeof(char) * string_arr[i]->capacity + (len * 2)); memcpy(new, string_arr[i]->data, string_arr[i]->size + (len * 2)); free(string_arr[i]->data); string_arr[i]->data = new; string_arr[i]->size += len; string_arr[i]->capacity += len * 2; } else { for (int n = 0; str[n]; n++) {string_arr[i]->data[string_arr[i]->size++] = str[n]; } } }
-#define CASE(i) case i: s->begin = &begin_##i; s->end = &end_##i; s->at = &at_##i; s->empty = &empty_##i; s->clear = &clear_##i; s->compare = &compare_##i; s->substr = &substr_##i; s->find = &find_##i; s->equal = &equal_##i; s->push_back = &push_back_##i; s->append = &append_##i; return
-#define COUNTER(i) BEGIN(i) END(i) AT(i) FIND(i) EMPTY(i) COMPARE(i) SUBSTR(i) CLEAR(i) EQUAL(i) PUSH_BACK(i) APPEND(i)
+#define CONTAIN(i) bool contain_##i(char *str) { int p = 0; for (size_t n = 0; n < string_arr[i]->size; n++) { p = 0; while (string_arr[i]->data[n] == str[p]) { n++; p++; if (str[p] == 0) return true; } } return false; }
+#define CASE(i) case i: s->begin = &begin_##i; s->end = &end_##i; s->at = &at_##i; s->empty = &empty_##i; s->clear = &clear_##i; s->compare = &compare_##i; s->substr = &substr_##i; s->find = &find_##i; s->equal = &equal_##i; s->push_back = &push_back_##i; s->append = &append_##i; s->c_str = &c_str_##i; s->contain = &contain_##i; return
+#define COUNTER(i) BEGIN(i) END(i) AT(i) FIND(i) EMPTY(i) COMPARE(i) SUBSTR(i) CLEAR(i) EQUAL(i) PUSH_BACK(i) APPEND(i) C_STR(i) CONTAIN(i)
 #define BUILD_STRING() COUNTER(__COUNTER__)
 
 BUILD_STRING()

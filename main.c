@@ -22,7 +22,12 @@ int main()
 	printf("data: %s\n", s->data);
 	s->append(" prova");
 	printf("data: %s\n", s->data);
-	
+	const char *c_str = s->c_str();
+	printf("c_str: %s\n", c_str);
+
+	printf("contain: %s\n", s->contain("es") ? "true" : "false");
+	printf("contain: %s\n", s->contain("pippo") ? "true" : "false");
+
 	printf("\ncopy constructor test:\n\n");
 	t_string *s2 = {String(s)};
 	printf("begin: %s\n", s2->begin());
